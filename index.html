@@ -16,6 +16,21 @@
           // localStorage 不可用时保持默认中文
         }
       })();
+      (function () {
+        // 挂载前初始化主题（夜间模式）与 theme-color，避免刷新出现浅色闪烁
+        // key 与取值口径需与 src/hooks/useTheme.ts 保持一致
+        var dark = false;
+        try {
+          dark = localStorage.getItem('theme') === 'dark';
+        } catch (e) {
+          // localStorage 不可用时保持默认浅色
+        }
+        if (dark) {
+          document.documentElement.classList.add('dark');
+          var themeColor = document.querySelector('meta[name="theme-color"]');
+          if (themeColor) themeColor.setAttribute('content', '#211f1c');
+        }
+      })();
     </script>
   </head>
   <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>

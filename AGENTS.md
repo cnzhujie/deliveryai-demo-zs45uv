@@ -21,7 +21,8 @@ src/
 ├── state/orderReducer.ts # 全局状态 reducer（订单/购物车/服务/售罄/支付）
 ├── data/menu.ts          # 菜品/分类/桌台静态数据
 ├── hooks/
-│   └── useElderlyMode.ts # 老人模式 hook：localStorage + html.elderly class
+│   ├── useElderlyMode.ts # 老人模式 hook：localStorage + html.elderly class
+│   └── useTheme.ts       # 主题（夜间模式）hook：localStorage + html.dark class + theme-color
 ├── lib/utils.ts          # 工具函数：cn（类名合并）、money（¥ 金额格式化）
 ├── components/
 │   ├── BindTable.tsx     # 绑定餐桌视图
@@ -32,7 +33,7 @@ src/
 │   ├── CheckoutView.tsx # 结账支付视图
 │   ├── ServiceSheet.tsx # 桌边服务呼叫面板
 │   ├── DemoConsole.tsx  # 演示控制台（手动切换状态）
-│   ├── TopBar.tsx       # 顶部导航栏（含会员弹窗、语言/老人模式切换）
+│   ├── TopBar.tsx       # 顶部导航栏（含会员弹窗、语言/主题/老人模式切换）
 │   └── ui/
 │       ├── button.tsx   # Button 组件（CVA 4 变体：default/secondary/outline/ghost）
 │       └── dialog.tsx   # Dialog 组件（Radix UI 封装）
@@ -51,7 +52,7 @@ playwright.config.ts     # Playwright 配置
 ## 技术栈
 
 - **框架**：React 18 + TypeScript ~5.6 + Vite 6
-- **样式**：Tailwind CSS 3.4（单一浅色主题，无暗色模式）
+- **样式**：Tailwind CSS 3.4（浅色 / 夜间模式双主题，`darkMode: 'class'` + `dark:` 变体）
 - **UI 库**：Radix UI（Dialog）、lucide-react（图标）、class-variance-authority（Button 变体）
 - **国际化**：i18next + react-i18next（中/英双语）
 - **E2E 测试**：Playwright
@@ -76,7 +77,30 @@ playwright.config.ts     # Playwright 配置
 
 - 颜色类名**直接硬编码在组件 JSX** 中（如 `bg-rice-100`、`text-charcoal-900`、`border-charcoal-900/5`），未使用 CSS 变量或语义 token 层。
 - 新增组件时沿用同样的 Tailwind 类名直写模式，不引入 CSS 变量抽象层。
-- 当前为单一浅色主题，Tailwind 未配置 `darkMode`，组件中没有 `dark:` 变体。
+- Tailwind 已配置 `darkMode: 'class'`，夜间模式通过 `dark:` 变体实现，切换时由 `src/hooks/useTheme.ts` 在 `<html>` 上增删 `dark` 类。
+
+### 深色（夜间模式）配色映射
+
+深色变体只使用现有色板（rice / chili / amber / charcoal）的等价色阶与透明度，不新增品牌色系：
+
+| 浅色用法 | 深色变体 | 用途 |
+| --- | --- | --- |
+| `bg-rice-100` | `dark:bg-charcoal-900` | 页面底色 |
+| `bg-white` / `bg-rice-50`（页面级卡片、弹窗、顶栏、底部导航） | `dark:bg-charcoal-700` | 卡片、弹窗、顶部栏、底部导航 |
+| `bg-white` / `bg-rice-50`（卡片内嵌区块、未选中选项） | `dark:bg-charcoal-900/60` | 卡片内次级区域 |
+| `bg-rice-100` / `bg-rice-200`（内嵌区域、标签） | `dark:bg-charcoal-900/60` 或 `dark:bg-rice-100/10` | 内嵌区域与芯片 |
+| `bg-white/90`（图片上浮层标签） | `dark:bg-charcoal-900/90` | 浮层标签 |
+| `border-charcoal-900/5` · `/10`、`border-white/80` | `dark:border-rice-100/10` · `/15` | 分割线与描边 |
+| `text-charcoal-900` / `700` / `500` | `dark:text-rice-50` / `rice-200` / `rice-200/75` | 主 / 次 / 辅助文字 |
+| `text-chili-500` · `600`（品牌强调文字与图标） | `dark:text-chili-100` | 价格、强调文字与图标 |
+| `text-amber-500` | `dark:text-amber-400` | 提醒类文字 |
+| `bg-chili-500`（主按钮、选中态） | `dark:bg-chili-600`（实心）/ `dark:bg-chili-500/20`（浅底选中） | 主按钮与选中态 |
+| `bg-amber-100` / `bg-chili-50`（徽章、图标容器） | `dark:bg-amber-400/15` · `dark:bg-chili-500/20` | 徽章与图标容器 |
+| `bg-chili-100` / `bg-amber-100`（背景装饰光斑） | `dark:bg-chili-500/15` · `dark:bg-amber-400/10` | 背景装饰 |
+| `bg-white/10` · `/15` · `/20`（深色面板内元素） | 保持原值 | 深色面板（charcoal-900）内元素 |
+
+- 深色下正文对比度 ≥ 4.5:1、大号文字与图形 ≥ 3:1；`OrderView` 进度面板的 `text-white/30`、`text-white/40` 在深色下分别提升为 `dark:text-white/60`、`dark:text-white/70`（浅色颜色保持不变）。
+- `src/index.css` 中 `html.dark` 负责页面基色，`.dark .paper-noise` 负责深色噪点纹理；老人模式对半透明文字的覆盖规则仅作用于深色面板，深色下依然有效。
 
 ### 全局过渡
 
@@ -121,17 +145,18 @@ export function useXxx() {
 ### 新增 localStorage 持久化功能
 
 - 统一使用 `try/catch` 包裹 `localStorage.getItem` / `setItem`，不可用时降级为内存态，不报错不阻塞。
-- 现有 localStorage key：`i18nextLng`（语言）、`elderly-mode`（老人模式，值为 `true`/`false`）。
+- 现有 localStorage key：`i18nextLng`（语言）、`elderly-mode`（老人模式，值为 `true`/`false`）、`theme`（主题，值为 `light`/`dark`，默认 `light`，不跟随系统偏好）。
+- 各偏好 key 相互独立，任一偏好的写入不得覆盖其他 key。
 
 ### 新增挂载前初始化逻辑
 
-在 `index.html` 的 `<script>` 块中扩展，参考现有 i18n lang 设置逻辑，在 React 挂载前完成 html 属性或 class 设置。
+在 `index.html` 的 `<script>` 块中扩展，参考现有 i18n lang 与主题（`theme` → `html.dark` + `theme-color`）初始化逻辑，在 React 挂载前完成 html 属性或 class 设置，避免首屏闪烁。
 
 ### 新增组件
 
 - 页面级组件放在 `src/components/`，通用 UI 组件放在 `src/components/ui/`。
 - 组件使用 Tailwind 类名直写样式，不使用 CSS Modules 或 styled-components。
-- 颜色使用上述色板，仅需浅色样式。
+- 颜色使用上述色板；新增或修改组件时必须**同时**提供 `dark:` 变体（全站覆盖，深色下不允许残留浅色区块）。
 - 弹窗使用 `src/components/ui/dialog.tsx` 封装的 `Dialog` / `DialogContent`。
 - 按钮使用 `src/components/ui/button.tsx` 封装的 `Button` 组件，选择合适的 variant。
 - 图标使用 `lucide-react`，颜色通过 `currentColor` 继承。

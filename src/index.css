@@ -30,6 +30,59 @@ html * {
   transition-timing-function: ease;
 }
 
+/* ===== 夜间模式（深色主题）全局基础 ===== */
+
+.dark { color: #e8e0d4; background: #1a1714; }
+.dark body { background: #1a1714; }
+.dark ::selection { background: rgba(225, 59, 43, 0.35); color: #ffddd8; }
+
+/* 深色主题：背景色覆盖 */
+.dark .bg-rice-100 { background-color: #1a1714; }
+.dark .bg-rice-100\/95 { background-color: rgba(26, 23, 20, 0.95); }
+.dark .bg-rice-50 { background-color: #1f1b17; }
+.dark .bg-rice-50\/95 { background-color: rgba(31, 27, 23, 0.95); }
+.dark .bg-rice-200 { background-color: #3a332c; }
+.dark .bg-white { background-color: #2a2520; }
+.dark .bg-white\/10 { background-color: rgba(251, 245, 234, 0.08); }
+.dark .bg-white\/15 { background-color: rgba(251, 245, 234, 0.1); }
+.dark .bg-white\/20 { background-color: rgba(251, 245, 234, 0.12); }
+.dark .bg-white\/55 { background-color: rgba(42, 37, 32, 0.65); }
+.dark .bg-white\/80 { background-color: rgba(42, 37, 32, 0.8); }
+.dark .bg-white\/90 { background-color: rgba(42, 37, 32, 0.9); }
+.dark .bg-white\/95 { background-color: rgba(42, 37, 32, 0.95); }
+.dark .bg-amber-100 { background-color: rgba(245, 184, 63, 0.15); }
+.dark .bg-amber-100\/70 { background-color: rgba(245, 184, 63, 0.12); }
+.dark .bg-chili-50 { background-color: rgba(225, 59, 43, 0.15); }
+.dark .bg-chili-100 { background-color: rgba(225, 59, 43, 0.12); }
+.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.15); }
+
+/* 深色主题：文字色覆盖 */
+.dark .text-charcoal-900 { color: #e8e0d4; }
+.dark .text-charcoal-700 { color: #c4bcae; }
+.dark .text-charcoal-500 { color: #8a8378; }
+.dark .text-chili-500 { color: #f06a5a; }
+.dark .text-chili-600 { color: #f06a5a; }
+.dark .text-amber-500 { color: #f5b83f; }
+.dark .text-emerald-600 { color: #4ade80; }
+
+/* 深色主题：边框色覆盖 */
+.dark .border-charcoal-900\/5 { border-color: rgba(251, 245, 234, 0.08); }
+.dark .border-charcoal-900\/10 { border-color: rgba(251, 245, 234, 0.12); }
+.dark .border-white\/80 { border-color: rgba(251, 245, 234, 0.1); }
+.dark .border-white { border-color: rgba(251, 245, 234, 0.2); }
+
+/* 深色主题：paper-noise 噪点适配 */
+.dark .paper-noise {
+  background-image: radial-gradient(rgba(251, 245, 234, 0.04) .7px, transparent .7px);
+  background-size: 12px 12px;
+}
+
+/* 深色主题：老人模式增强对比度（暗色背景下提升半透明文字） */
+.dark.elderly .text-rice-200\/40 { color: rgb(243 230 208 / 0.85); }
+.dark.elderly .text-rice-200\/60 { color: rgb(243 230 208 / 0.95); }
+.dark.elderly .text-white\/30 { color: rgb(255 255 255 / 0.8); }
+.dark.elderly .text-white\/40 { color: rgb(255 255 255 / 0.85); }
+
 @layer utilities {
   .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
   .paper-noise {
